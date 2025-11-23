@@ -1,15 +1,56 @@
-name: natfowarding
+name: nat-fowarding
 version: '2.40'
 
 services:
   router:
     image: debian:12
-    command: echo "Hello World!"
+    command: >
+      bash -c "
+        apt update && apt install -y iptables &&
+        iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE &&
+        iptables -A FORWARD -i eth1 -o eth0 -j ACCEPT &&
+        iptables -A FORWARD -i eth1 -o eth1 -j ACCEPT &&
+        tail -f /dev/null
+      "
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1
+    networks:
+      net_one:
+        ipv4_address: 192.168.10.254
+      net_two:
+        ipv4_address: 192.168.20.254
 
   host_one:
     image: debian:12
-    command: echo "Hi im host one"
+    command: sleep infinity
+    cap_add:
+      -  NET_ADMIN
+    networks:
+      net_one:
+        ipv4_address: 192.168.10.10
 
   host_two:
     image: debian:12
-    command: echo "Hi im host two"
+    command: sleep infinity
+    cap_add:
+      - NET_ADMIN
+    networks:
+      net_two:
+        ipv4_address: 192.168.20.30
+
+networks:
+  net_one:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.10.0/24
+
+  net_two:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.20.0/24
+      
+    
