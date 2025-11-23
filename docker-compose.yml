@@ -1,0 +1,15 @@
+name: natfowarding
+version: '2.40'
+
+services:
+  router:
+    image: debian:12
+    command: echo "Hello World!"
+
+  host_one:
+    image: debian:12
+    command: echo "Hi im host one"
+
+  host_two:
+    image: debian:12
+    command: echo "Hi im host two"
